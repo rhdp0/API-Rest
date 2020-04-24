@@ -19,6 +19,12 @@ const UserSchema = new mongoose.Schema({
         require: true,
         select: false, //para quando buscar as informações de um usuário a senha não venha junto na array
     },
+    confirmPassword:{
+        type: String,
+        require: true,
+        select: false
+    },
+
     passwordResetToken: {
         type: String,
         select: false,

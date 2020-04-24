@@ -11,12 +11,25 @@ function generateToken(params = {}) {
 
 module.exports = {
     async store(req, res) {
-        const { name, email, password } = req.body;
+        const { name, email, password, confirmPassword } = req.body;
 
 
         if (await User.findOne({ email })){
-            return res.status(400).send({error: 'User already exists'})
+            return res.status(400).send({error: 'Email já cadastrado'})
         };
+
+        if(name === '' || email === '' || password === ''){
+            return res.status(400).send({error: 'Todos os campos são obrigatórios'})
+        };
+
+        if(confirmPassword === '') {
+            return res.status(400).send({error: 'Confirme sua senha'})
+        }else{
+            if(confirmPassword !== password) {
+                return res.status(400).send({error: 'As senhas precisam ser iguais'})
+            }
+        }
+
 
         user = await User.create({ 
             name, 
@@ -36,20 +49,21 @@ module.exports = {
 
         const user = await User.findOne({ email }).select('+password');
 
-        if(!user){
-            return res.status(400).send({ error: 'User not found' });
+        if(!user || email === ''){
+            error =  res.status(400).send({ error: 'Usuário não encontrado' });
+            return error
         }
 
         if(!await bcrypt.compare(password, user.password)){
-            return res.status(400).send({ error: 'Invalid password' });
+            error =  res.status(400).send({ error: 'Senha inválida' });
+            return error
         }
 
         user.password = undefined;
-
-        
 
         res.send({ user, 
             token: generateToken({ id: user.id }),
         });
     }
+
 }
